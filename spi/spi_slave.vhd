@@ -25,9 +25,6 @@ signal tx :tx_states;
 signal rx :rx_states;
 
 signal registered_rx:std_logic_vector(7 downto 0);
---divide input clock because of shanon theorem fs>2f
---so system clock (input clock must be >=2*SCLK)
--- from what i understand, the sampling rate is 
 
 begin
 
