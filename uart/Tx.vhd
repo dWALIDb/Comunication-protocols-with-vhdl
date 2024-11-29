@@ -9,7 +9,7 @@ generic(
 	frequency: integer:=1 --in Mhz
 );
 port(
-	clk,rst: in std_logic;
+	clk,rst,send: in std_logic;
 	D:in std_logic_vector(7 downto 0);
 	O,done:out std_logic
 );end Tx;
@@ -26,30 +26,40 @@ signal state:my_state;
 --this case is named oversampling, making the data more robust to noise.
 constant samples:integer :=frequency*(10**6)/(16*baud_rate);
 signal counter:integer range 0 to samples;
-signal registered: std_logic_vector(7 downto 0);
 begin 
 
 process(clk,rst,state)
 begin 
-if rst='1' then state<=idle;counter<=(0);registered<=(OTHERS=>'0');
+if rst='1' then state<=idle;counter<=(0);
 elsif clk'event and clk='1' then 
 	if(counter<samples-1) then counter<=counter+1; else counter<=0;end if;
 	case state is 
-	when idle=>o<='1';if(counter<samples-1) then null; else state<=start;end if;
-	when start=>o<='0';if(counter<samples-1) then null; else registered<=D;state<=d0;end if;
-	when d0=>if(counter<samples-1) then o<=registered(0); else state<=d1;end if;
-	when d1=>if(counter<samples-1) then o<=registered(1); else state<=d2;end if;
-	when d2=>if(counter<samples-1) then o<=registered(2); else state<=d3;end if;
-	when d3=>if(counter<samples-1) then o<=registered(3); else state<=d4;end if;
-	when d4=>if(counter<samples-1) then o<=registered(4); else state<=d5;end if;
-	when d5=>if(counter<samples-1) then o<=registered(7); else state<=d6;end if;
-	when d6=>if(counter<samples-1) then o<=registered(6); else state<=d7;end if;
-	when d7=>if(counter<samples-1) then o<=registered(7); else state<=finish;end if;
-	when finish=>o<='1';if(counter<samples-1) then null; else state<=idle;end if;
+	when idle=>if(send='1') then state<=start; else counter<=0;end if;
+	when start=>if(counter=samples-1) then state<=d0;end if;
+	when d0=>if(counter=samples-1) then state<=d1;end if;
+	when d1=>if(counter=samples-1) then state<=d2;end if;
+	when d2=>if(counter=samples-1) then state<=d3;end if;
+	when d3=>if(counter=samples-1) then state<=d4;end if;
+	when d4=>if(counter=samples-1) then state<=d5;end if;
+	when d5=>if(counter=samples-1) then state<=d6;end if;
+	when d6=>if(counter=samples-1) then state<=d7;end if;
+	when d7=>if(counter=samples-1) then state<=finish;end if;
+	when finish=>if(counter=samples-1) then state<=idle;end if;
 end case;
 end if;
 end process;
 
+O<='1' when state=idle or state=finish else
+	'0' when state=start else
+	d(0) when state=d0 else 
+	d(1) when state=d1 else
+	d(2) when state=d2 else
+	d(3) when state=d3 else
+	d(4) when state=d4 else
+	d(5) when state=d5 else
+	d(6) when state=d6 else
+	d(7) when state=d7 else '1' ;
+	
 done<='1' when state=finish else '0';
 
 end arch;
