@@ -27,9 +27,14 @@ Serial Peripheral Interface, this device is faster that UART because it is synch
 The device has 2 modules, the **master** and the **slave**, both of them send and recieve data at the same time, making the 
 comunication full duplex, but only when the master wants to, and at the rate that it specifies.  
 this is achieved using the following signals:  
-**CS:** this line idles high, and when the master wants to comunicate it enables the device that it wants to comunicate with.  
-**SCLK:** the clock is used for synchronizationn this makes the speed of transmition very high.  
+**CS:** this line is specified by the master to enable the slave that it wants to comminicate with.   
+**SCLK:** the clock is specified by the master. It is used for synchronizationn this makes the speed of transmition very high.  
 **MISO:** the master's input and the salve's output.    
 **MOSI:** the slave's input and the master's output.  
-**CPOL/CPHA:** the device sends data and samples data according to 2 parameters, **clock phase** and **clock polarity**
-clock phase represents the 
+**CPOL/CPHA:** the device sends data and samples data according to 2 parameters, **clock phase** and **clock polarity**  
+-clock POLARITY represents the idle logic level of the **SCLK** signal(0 when idle low,1 when idle high).   
+-clock PHASE specifies when the data should be sampled, when cplo=cpha then data is sampled at rising edge, else it is 
+sampled at falling edge.  
+
+The implementation is not very diferent that UART just that the clock is generated from system clock and according to cpol 
+and cpha, and that the generated clock is detected by the reciever at the correct time.
