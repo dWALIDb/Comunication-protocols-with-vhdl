@@ -37,4 +37,5 @@ this is achieved using the following signals:
 sampled at falling edge.  
 
 The implementation is not very diferent that UART just that the clock is generated from system clock and according to cpol 
-and cpha, and that the generated clock is detected by the reciever at the correct time.
+and cpha, and that the generated clock is detected by the reciever at the correct time.  
+For SCLK the generation is by counting 16 clk cycles of the system clk for each pulse of SCLK. This is called oversampling making the data more robust against noise.
