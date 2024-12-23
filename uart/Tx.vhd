@@ -22,9 +22,8 @@ signal state:my_state;
 --according to shanon nyquist theorem:
 --the sampling frequency is twice that of the highest frequency of the system
 --if we want baud rate of 9600 the input clock of the system must be more that 2*(baud rate)
---here the coefficient for the input frequency is chosen to be 16.
 --this case is named oversampling, making the data more robust to noise.
-constant samples:integer :=frequency*(10**6)/(16*baud_rate);
+constant samples:integer :=frequency*(10**6)/(baud_rate);
 signal counter:integer range 0 to samples;
 begin 
 
