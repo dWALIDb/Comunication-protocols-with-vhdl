@@ -1,4 +1,5 @@
 --no parity
+-- 8 bits 1 start and stop bits
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -30,6 +31,8 @@ begin
 
 process(clk,rst,state)
 begin 
+	--fsm style of writing code
+	--each bit has its own state that handles writing the bit to output, and detecting start and end bits
 if rst='1' then state<=idle;counter<=(others=>'0');
 elsif clk'event and clk='1' then 
 	counter<=counter+1;
