@@ -1,4 +1,5 @@
 --no parity
+--8 bits 1 stop and start bits
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -32,6 +33,10 @@ begin
 
 process(clk,rst,state)
 begin 
+	-- fsm style of coding 
+	-- each bit has its own state that reads the data and registers it
+	-- to avoid meta stability when sampling, we need to have a filler state that leaves space for D0
+	-- and other bits to read in the middle of the bit period
 if rst='1' then state<=idle;counter<=(others=>'0');registered<=(others=>'0');
 elsif clk'event and clk='1' then 
 	counter<=counter+1;
