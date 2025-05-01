@@ -60,6 +60,7 @@ port(
 component uart_buff is 
 generic(
 		address_width:integer:=6;
+		--used to initialize content of uart buffers (optional) give "/" for null 
 		synthesis_file_directory: string:=
 		"C:\Users\DELL\Desktop\fpga\RISC-V-CORE-WITH-VHDL-main\RISC-V-CORE-WITH-VHDL-main\assembler\d_mif0.mif"
 );
@@ -77,15 +78,28 @@ signal rx_counter,tx_counter:std_logic_vector(buffer_addresses-1 downto 0);
 signal tx_buffer_out,rx_buffer_in:std_logic_vector(7 downto 0);
 signal b:std_logic;
 begin 
-
+-- indicate completed byte transfer/reception use to interrupt cpu? hmm...
 doneTx<=done_transmit;
 doneRx<=done_recieve;
-
-
+-- used to get number of sent or recieved messages
+-- could read by cpu through a memory location to get number of recieved/sent messages 
+count_tx<=tx_counter;
+count_rx<=rx_counter;
+-- using the simple devices for more complex tasks
+-- tx and rx have different resets and tx send signals 
+-- they could be all wired to a register and targeted through a memory location by CPU to reset or send data
 trans:tx generic map(baud_rate,frequency) port map(clk,rst_tx,send,tx_buffer_out,open,tx_out,done_transmit);
 rec:rx generic map(baud_rate,frequency) port map(clk,rst_rx,rx_in,done_recieve,open,rx_buffer_in);
+-- counters used to write data into buffers in fifo manner yet still provide random access through RX_rd and WD_TX where you write and read from each buffer 
+URx_counter: counter generic map(buffer_addresses) port map(not done_recieve,rst_rx,rx_counter);
+UTx_counter: counter generic map(buffer_addresses) port map(not done_transmit,rst_tx,tx_counter);
+-- the buffers used to comunicate they are always enabled
+-- tx buffer is write only write message and it handles the rest
+-- rx buffer is read only read the bytes only, you can get how many messages are read with count signals for each device
+rx_buffer: uart_buff generic map(buffer_addresses,"") port map(clk,RD_RX and not cs,done_recieve,'0',rx_buffer_Raddress,rx_counter,rx_buffer_in,rx_buffer_out); 
+tx_buffer: uart_buff generic map(buffer_addresses,"") port map(clk,'1',WD_TX and not cs,'0',tx_counter,tx_buffer_Waddress,tx_buffer_in,tx_buffer_out); 
 
---LOOP BACK TEST :) FOR NOW XD
+--LOOP BACK TEST :) FOR NOW XD-----------------------------------------------------------------------------------------------------------
 --trans:tx generic map(1152000,50) port map(clk,rst_tx,send,tx_buffer_out,open,b,done_transmit);
 --tx_out<=b;
 --rec:rx generic map(1152000,50) port map(clk,rst_rx,b,done_recieve,open,rx_buffer_in);
@@ -93,12 +107,5 @@ rec:rx generic map(baud_rate,frequency) port map(clk,rst_rx,rx_in,done_recieve,o
 -- reciver and transmitter counters used for addressing in the corresponding buffers
 -- transmitter can only read and send when triggered and reciever only writes to buffer 
 -- user does write to transmitter buffer and reads recieve buffer
-URx_counter: counter generic map(buffer_addresses) port map(not done_recieve,rst_rx,rx_counter);
-UTx_counter: counter generic map(buffer_addresses) port map(not done_transmit,rst_tx,tx_counter);
 
-count_tx<=tx_counter;
-count_rx<=rx_counter;
--- the buffers used to comunicate they are always enabled
-rx_buffer: uart_buff generic map(buffer_addresses,"") port map(clk,RD_RX and not cs,done_recieve,'0',rx_buffer_Raddress,rx_counter,rx_buffer_in,rx_buffer_out); 
-tx_buffer: uart_buff generic map(buffer_addresses,"") port map(clk,'1',WD_TX and not cs,'0',tx_counter,tx_buffer_Waddress,tx_buffer_in,tx_buffer_out); 
 end arch;
