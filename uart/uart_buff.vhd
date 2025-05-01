@@ -1,11 +1,4 @@
---little endian 
---memory is byte addressable but outputs 4 bytes of memory
---example 
---0A0B0C0D in little endian is stored as follows "0D" at i "0C" at i+1 "0B" at i+2 "0A" at i+3
---one architecture is used for synthesis(mif file) and the other for simulation(txt file)
---used for instruction memory and for data memory 
---variable in process used to run the for-loop because the loops are kinda weird with signals
---used for synthesis because attributes are synthesisable but not simulatable for some reason
+-- just a ram used to store the bytes while the device processes them
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
