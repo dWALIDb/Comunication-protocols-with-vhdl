@@ -1,1 +1,4 @@
-data transmition/ reception is at 9600 BAUD
+data transmition/ reception will be the same upon instantiation
+
+provide the frequency and baudrate through generics
+
